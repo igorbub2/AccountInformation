@@ -1,0 +1,93 @@
+{
+  "accountsGroups": [
+    {
+      "accounts": [
+        {
+          "accountNumber": "12 1234 5678 1234 5678 1234 5678",
+          "balance": 500.00,
+          "currency": "PLN",
+          "name": "mKonto Intensive",
+          "customName": "",
+          "primaryAction": {
+            "url": "/pl/Accounts/Accounts/GetTransferDomestic",
+            "name": null
+          },
+          "id": "testId1"
+        }
+      ],
+      "header": "Personal",
+      "summary": {
+        "currency": "PLN",
+        "isRoundedToOneCurrency": false,
+        "balance": 500.00
+      }
+    },
+    {
+      "accounts": [
+        {
+          "accountNumber": "56 1234 5678 1234 5678 1234 5678",
+          "balance": 1000.00,
+          "currency": "PLN",
+          "name": "mKonto Intensive",
+          "customName": "",
+          "primaryAction": {
+            "url": "/pl/Accounts/Accounts/GetTransferDomestic",
+            "name": null
+          },
+          "id": "testId2"
+        }
+      ],
+      "header": "Vat",
+      "summary": {
+        "currency": "PLN",
+        "isRoundedToOneCurrency": false,
+        "balance": 1000.00
+      }
+    },
+    {
+      "accounts": [],
+      "header": "Foreigns",
+      "summary": {
+        "currency": "PLN",
+        "isRoundedToOneCurrency": false,
+        "balance": 0.0
+      }
+    },
+    {
+      "accounts": [
+        {
+          "accountNumber": "78 1234 5678 1234 5678 1234 5678",
+          "balance": 12432.50,
+          "currency": "PLN",
+          "name": "mKonto Intensive",
+          "customName": "",
+          "primaryAction": {
+            "url": "/pl/Accounts/Accounts/GetTransferDomestic",
+            "name": null
+          },
+          "id": "testId3"
+        }
+      ],
+      "header": "Authorities",
+      "summary": {
+        "currency": "PLN",
+        "isRoundedToOneCurrency": false,
+        "balance": 12432.50
+      }
+    },
+    {
+      "accounts": [],
+      "header": "Others",
+      "summary": {
+        "currency": "PLN",
+        "isRoundedToOneCurrency": false,
+        "balance": 0.0
+      }
+    }
+  ],
+  "summary": {
+    "currency": "PLN",
+    "isRoundedToOneCurrency": false,
+    "balance": 13932.50
+  }
+}
