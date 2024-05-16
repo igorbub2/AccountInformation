@@ -1,7 +1,0 @@
-{
-  "Url": "sca/authorization/disposable/hostless",
-  "Method": "POST",
-  "Data": {
-    "ScaAuthorizationId": ""
-  }
-}

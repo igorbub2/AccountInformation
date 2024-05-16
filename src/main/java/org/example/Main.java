@@ -1,16 +1,21 @@
 package org.example;
 
-import org.example.client.mbank.MBankClient;
-import org.example.model.AccountInformation;
+import org.example.client.mbank.KeyboardUserInput;
+import org.example.client.mbank.LoggedOutMBankClient;
+import org.example.model.Account;
 
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        AccountInformationExtractionService extractionService = new AccountInformationExtractionService(new MBankClient());
-
-        List<AccountInformation> accountInformation = extractionService.getAccountInformation();
-
-        accountInformation.forEach(account -> System.out.println(account.toString()));
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Login:");
+        String login = scanner.nextLine();
+        System.out.println("Password:");
+        String password = scanner.nextLine();
+        AccountScraper extractionService = new AccountScraper(new LoggedOutMBankClient(new KeyboardUserInput(), "https://online.mbank.pl"));
+        List<Account> accountInformation = extractionService.getAccountInformation(login, password);
+        accountInformation.forEach(account -> System.out.println(account.iban() + ": " + account.balance() + " " + account.currency()));
     }
 }
