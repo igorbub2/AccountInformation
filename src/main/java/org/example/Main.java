@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.client.exceptions.InvalidCredentialsException;
 import org.example.client.mbank.KeyboardUserInput;
 import org.example.client.mbank.LoggedOutMBankClient;
 import org.example.model.Account;
@@ -15,7 +16,11 @@ public class Main {
         System.out.println("Password:");
         String password = scanner.nextLine();
         AccountScraper extractionService = new AccountScraper(new LoggedOutMBankClient(new KeyboardUserInput(), "https://online.mbank.pl"));
-        List<Account> accountInformation = extractionService.getAccountInformation(login, password);
-        accountInformation.forEach(account -> System.out.println(account.iban() + ": " + account.balance() + " " + account.currency()));
+        try {
+            List<Account> accountInformation = extractionService.getAccountInformation(login, password);
+            accountInformation.forEach(account -> System.out.println(account.iban() + ": " + account.balance() + " " + account.currency()));
+        } catch (InvalidCredentialsException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }
