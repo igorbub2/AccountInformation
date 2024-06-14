@@ -4,7 +4,7 @@ import org.example.model.Account;
 
 import java.util.List;
 
-public interface LoggedInBankClient {
+public interface Retrieval {
     List<Account> retrieveAccountsBalance();
 
     void logout();

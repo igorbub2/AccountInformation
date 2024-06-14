@@ -1,24 +1,23 @@
 package org.example;
 
-import org.example.client.LoggedInBankClient;
-import org.example.client.LoggedOutBankClient;
+import org.example.client.Retrieval;
+import org.example.client.Authentication;
+import org.example.client.mbank.UserInput;
 import org.example.model.Account;
 
 import java.util.List;
 
 public class AccountScraper {
-    private final LoggedOutBankClient loggedOutBankClient;
-    public AccountScraper(LoggedOutBankClient loggedOutBankClient) {
-        this.loggedOutBankClient = loggedOutBankClient;
+    private final Authentication authentication;
+    public AccountScraper(Authentication authentication) {
+        this.authentication = authentication;
     }
-    public List<Account> getAccountInformation(String login, String password) {
-        LoggedInBankClient loggedInBankClient = loggedOutBankClient.login(login, password);
-        List<Account> account;
+    public List<Account> getAccountInformation(UserInput userInput) {
+        Retrieval loggedInBankClient = authentication.login(userInput);
         try {
-            account = loggedInBankClient.retrieveAccountsBalance();
+            return loggedInBankClient.retrieveAccountsBalance();
         } finally {
             loggedInBankClient.logout();
         }
-        return account;
     }
 }
