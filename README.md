@@ -24,6 +24,8 @@ Run this command to start the application:
 java -jar target/AccountInformation-1.0-SNAPSHOT.jar
 ```
 
+For the purpose of testing you need to fill testLoginCredentials.properties file located in src/test/resources with real life credentials
+
 ## Usage
 
 After running the app you need to log in using login and password.
