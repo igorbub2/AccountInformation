@@ -24,7 +24,7 @@ Run this command to start the application:
 java -jar target/AccountInformation-1.0-SNAPSHOT.jar
 ```
 
-For the purpose of testing you need to fill testLoginCredentials.properties file located in src/test/resources with real life credentials
+For the purpose of testing you need to copy testLoginCredentials.sample and rename it to testLoginCredentials.properties. After that you need to fill the renamed file with real life credentials
 
 ## Usage
 
