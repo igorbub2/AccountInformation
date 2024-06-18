@@ -79,7 +79,7 @@ public class MBankAuthentication implements Authentication {
   private void finalizeAuthentication(SignInInput signInInput) {
     signInInput.confirmTwoFactorAuthentication();
     HttpRequest finalizeTwoFactorAuthentication = buildFinalizeTwoFactorAuthenticationRequest();
-    HttpResponse<String> response = httpClient.fetchRequestWithoutResponseHandling(finalizeTwoFactorAuthentication);
+    HttpResponse<String> response = httpClient.fetchRequestWithoutIncorrectResponseHandling(finalizeTwoFactorAuthentication);
     if (response.statusCode() == 400) throw new InvalidCredentials("Two factor authentication failed");
     handleIncorrectResponse(response.statusCode());
   }

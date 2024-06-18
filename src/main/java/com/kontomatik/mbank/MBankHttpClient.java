@@ -82,12 +82,12 @@ public class MBankHttpClient {
   }
 
   HttpResponse<String> fetchRequest(HttpRequest request) {
-    HttpResponse<String> response = fetchRequestWithoutResponseHandling(request);
+    HttpResponse<String> response = fetchRequestWithoutIncorrectResponseHandling(request);
     handleIncorrectResponse(response.statusCode());
     return response;
   }
 
-  HttpResponse<String> fetchRequestWithoutResponseHandling(HttpRequest request) {
+  HttpResponse<String> fetchRequestWithoutIncorrectResponseHandling(HttpRequest request) {
     return ExceptionUtils.uncheck(() -> client.send(request, HttpResponse.BodyHandlers.ofString()));
   }
 

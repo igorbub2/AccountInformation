@@ -40,7 +40,7 @@ public class MBankRetrieval implements Retrieval {
     HttpRequest logoutRequest = client.getRequest()
       .uri(buildUri(HOST + "/LoginMain/Account/Logout"))
       .build();
-    client.fetchRequestWithoutResponseHandling(logoutRequest);
+    client.fetchRequestWithoutIncorrectResponseHandling(logoutRequest);
   }
 
 }
