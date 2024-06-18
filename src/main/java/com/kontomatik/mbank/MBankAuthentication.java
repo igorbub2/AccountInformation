@@ -1,10 +1,10 @@
 package com.kontomatik.mbank;
 
+import com.kontomatik.SignInInput;
 import com.kontomatik.exceptions.InvalidCredentials;
 import com.kontomatik.Retrieval;
 import com.kontomatik.Authentication;
 
-import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
@@ -29,9 +29,8 @@ public class MBankAuthentication implements Authentication {
   }
 
   private void login(LoginCredentials loginCredentials) {
-    URI uri = buildUri(HOST + "/pl/LoginMain/Account/JsonLogin");
     String body = getLoginRequestBody(loginCredentials);
-    httpClient = MBankHttpClient.initialize(uri, body);
+    httpClient = MBankHttpClient.initialize(body);
   }
 
   private static String getLoginRequestBody(LoginCredentials loginCredentials) {

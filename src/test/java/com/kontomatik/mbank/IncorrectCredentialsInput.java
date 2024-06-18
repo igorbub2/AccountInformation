@@ -1,5 +1,7 @@
 package com.kontomatik.mbank;
 
+import com.kontomatik.SignInInput;
+
 public class IncorrectCredentialsInput implements SignInInput {
 
   @Override

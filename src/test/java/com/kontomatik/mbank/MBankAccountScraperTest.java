@@ -15,6 +15,20 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MBankAccountScraperTest {
 
   @Test
+  public void shouldFailSignInWithIncorrectCredentials() {
+    AccountScraper scraper = new AccountScraper(new MBankAuthentication(new IncorrectCredentialsInput()));
+    InvalidCredentials exception = assertThrows(InvalidCredentials.class, scraper::fetchAccounts);
+    assertEquals(exception.getMessage(), "Incorrect login credentials");
+  }
+
+  @Test
+  public void shouldFailTwoFactorAuthentication() {
+    AccountScraper scraper = new AccountScraper(new MBankAuthentication((MockSignInInput) () -> {}));
+    InvalidCredentials exception = assertThrows(InvalidCredentials.class, scraper::fetchAccounts);
+    assertEquals(exception.getMessage(), "Two factor authentication failed");
+  }
+
+  @Test
   public void shouldRetrieveAccountsFromBank() {
     AccountScraper scraper = new AccountScraper(new MBankAuthentication((MockSignInInput) () -> {
       try {
@@ -34,20 +48,6 @@ public class MBankAccountScraperTest {
         assertTrue(account.iban().matches("[0-9]{2}(?: ?[0-9]{4}){6}"));
       }
     );
-  }
-
-  @Test
-  public void shouldFailSignInWithIncorrectCredentials() {
-    AccountScraper scraper = new AccountScraper(new MBankAuthentication(new IncorrectCredentialsInput()));
-    InvalidCredentials exception = assertThrows(InvalidCredentials.class, scraper::fetchAccounts);
-    assertEquals(exception.getMessage(), "Incorrect login credentials");
-  }
-
-  @Test
-  public void shouldFailTwoFactorAuthentication() {
-    AccountScraper scraper = new AccountScraper(new MBankAuthentication((MockSignInInput) () -> {}));
-    InvalidCredentials exception = assertThrows(InvalidCredentials.class, scraper::fetchAccounts);
-    assertEquals(exception.getMessage(), "Two factor authentication failed");
   }
 
 }

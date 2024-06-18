@@ -1,5 +1,7 @@
 package com.kontomatik.mbank;
 
+import com.kontomatik.SignInInput;
+
 import java.io.Console;
 
 public class MBankSignInInput implements SignInInput {

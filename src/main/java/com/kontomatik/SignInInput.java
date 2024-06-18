@@ -1,4 +1,6 @@
-package com.kontomatik.mbank;
+package com.kontomatik;
+
+import com.kontomatik.mbank.LoginCredentials;
 
 public interface SignInInput {
 

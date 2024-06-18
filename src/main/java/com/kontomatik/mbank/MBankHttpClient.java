@@ -32,9 +32,9 @@ public class MBankHttpClient {
       .build();
   }
 
-  static MBankHttpClient initialize(URI uri, String body) {
+  static MBankHttpClient initialize(String body) {
     MBankHttpClient httpClient = new MBankHttpClient();
-    HttpRequest request = httpClient.buildLoginRequest(uri, body);
+    HttpRequest request = buildLoginRequest(body);
     HttpResponse<String> loginResponse = httpClient.fetchRequest(request);
     LoginResponse response = httpClient.parse(loginResponse.body(), LoginResponse.class);
     if (httpClient.isIncorrectCredentials(response)) throw new InvalidCredentials("Incorrect login credentials");
@@ -42,9 +42,9 @@ public class MBankHttpClient {
     return httpClient;
   }
 
-  private HttpRequest buildLoginRequest(URI uri, String body) {
+  private static HttpRequest buildLoginRequest(String body) {
     return baseRequest()
-      .uri(uri)
+      .uri(buildUri(HOST + "/pl/LoginMain/Account/JsonLogin"))
       .POST(HttpRequest.BodyPublishers.ofString(body))
       .header("Referer", "https://online.mbank.pl/pl/Login")
       .build();
