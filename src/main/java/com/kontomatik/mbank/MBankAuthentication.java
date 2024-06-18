@@ -100,6 +100,3 @@ public class MBankAuthentication implements Authentication {
   }
 
 }
-
-record LoginResponse(String errorMessageTitle) {
-}

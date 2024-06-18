@@ -99,4 +99,6 @@ public class MBankHttpClient {
     return ExceptionUtils.uncheck(() -> mapper.readValue(body, outputClass));
   }
 
+  private record LoginResponse(String errorMessageTitle) {
+  }
 }
