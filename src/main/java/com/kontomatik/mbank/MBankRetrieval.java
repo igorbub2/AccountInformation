@@ -43,13 +43,13 @@ public class MBankRetrieval implements Retrieval {
     client.fetchRequestWithoutIncorrectResponseHandling(logoutRequest);
   }
 
-}
+  private record MBankAccount(String accountNumber, String balance, String currency) {
+  }
 
-record MBankAccount(String accountNumber, String balance, String currency) {
-}
+  private record MBankAccountGroup(List<MBankAccount> accounts, String header) {
+  }
 
-record MBankAccountGroup(List<MBankAccount> accounts, String header) {
-}
+  private record MBankAccountsGroups(List<MBankAccountGroup> accountsGroups) {
+  }
 
-record MBankAccountsGroups(List<MBankAccountGroup> accountsGroups) {
 }
