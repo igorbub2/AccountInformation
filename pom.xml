@@ -38,7 +38,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>org.example.Main</mainClass>
+                            <mainClass>com.kontomatik.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
