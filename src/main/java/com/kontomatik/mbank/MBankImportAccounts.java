@@ -1,31 +1,26 @@
 package com.kontomatik.mbank;
 
-import com.kontomatik.Retrieval;
+import com.kontomatik.ImportAccounts;
 import com.kontomatik.model.Account;
 
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.kontomatik.mbank.MBankHttpClient.*;
+class MBankImportAccounts implements ImportAccounts {
 
-public class MBankRetrieval implements Retrieval {
+  private final MBankHttpClient httpClient;
 
-  private final MBankHttpClient client;
-
-  public MBankRetrieval(MBankHttpClient httpRequest) {
-    this.client = httpRequest;
+  public MBankImportAccounts(MBankHttpClient httpClient) {
+    this.httpClient = httpClient;
   }
 
   @Override
-  public List<Account> retrieveAccountsBalance() {
-    HttpRequest accountsGroupRequest = client.getRequest()
-      .uri(buildUri(HOST + "/pl/Accounts/Accounts/AccountsGroups"))
+  public List<Account> retrieveAccounts() {
+    HttpRequest accountsGroupRequest = httpClient.prepareRequest("/pl/Accounts/Accounts/AccountsGroups")
       .GET()
       .build();
-    HttpResponse<String> accountsGroup = client.fetchRequest(accountsGroupRequest);
-    MBankAccountsGroups accountsGroups = client.parse(accountsGroup.body(), MBankAccountsGroups.class);
+    MBankAccountsGroups accountsGroups = httpClient.fetchParsedBody(accountsGroupRequest, MBankAccountsGroups.class);
     return mapToAccount(accountsGroups);
   }
 
@@ -37,10 +32,10 @@ public class MBankRetrieval implements Retrieval {
 
   @Override
   public void logout() {
-    HttpRequest logoutRequest = client.getRequest()
-      .uri(buildUri(HOST + "/LoginMain/Account/Logout"))
+    HttpRequest logoutRequest = httpClient.prepareRequest("/LoginMain/Account/Logout")
+      .GET()
       .build();
-    client.fetchRequestWithoutIncorrectResponseHandling(logoutRequest);
+    httpClient.fetchWithoutCorrectResponseAssertion(logoutRequest);
   }
 
   private record MBankAccount(String accountNumber, String balance, String currency) {

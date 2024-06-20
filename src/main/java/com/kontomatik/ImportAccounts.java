@@ -4,9 +4,9 @@ import com.kontomatik.model.Account;
 
 import java.util.List;
 
-public interface Retrieval {
+public interface ImportAccounts {
 
-  List<Account> retrieveAccountsBalance();
+  List<Account> retrieveAccounts();
 
   void logout();
 

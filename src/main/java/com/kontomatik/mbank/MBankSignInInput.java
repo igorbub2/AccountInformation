@@ -1,15 +1,13 @@
 package com.kontomatik.mbank;
 
-import com.kontomatik.SignInInput;
-
 import java.io.Console;
 
 public class MBankSignInInput implements SignInInput {
 
-  private final Console console = System.console();
+  private static final Console console = System.console();
 
   @Override
-  public LoginCredentials provideCredentials() {
+  public LoginAndPassword provideLoginAndPassword() {
     String login = console.readLine("Login (needs to be between 7 and 32 characters):");
     while (login.length() < 7 || login.length() > 32) {
       login = console.readLine("Login incorrect - needs to be between 7 and 32 characters, try again:");
@@ -18,7 +16,7 @@ public class MBankSignInInput implements SignInInput {
     while (password.length() < 8 || password.length() > 32) {
       password = console.readLine("Password incorrect - needs to be between 8 and 32 characters, try again:");
     }
-    return new LoginCredentials(login, password);
+    return new LoginAndPassword(login, password);
   }
 
 

@@ -13,11 +13,11 @@ public class AccountScraper {
   }
 
   public List<Account> fetchAccounts() {
-    Retrieval loggedInBankClient = authentication.signIn();
+    ImportAccounts importAccounts = authentication.signIn();
     try {
-      return loggedInBankClient.retrieveAccountsBalance();
+      return importAccounts.retrieveAccounts();
     } finally {
-      loggedInBankClient.logout();
+      importAccounts.logout();
     }
   }
 
