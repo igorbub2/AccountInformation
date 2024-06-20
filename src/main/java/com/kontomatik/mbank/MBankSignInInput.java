@@ -19,7 +19,6 @@ public class MBankSignInInput implements SignInInput {
     return new LoginAndPassword(login, password);
   }
 
-
   @Override
   public void confirmTwoFactorAuthentication() {
     System.out.println("Press ENTER after confirming two factor authentication");
