@@ -2,8 +2,13 @@ package com.kontomatik.mbank;
 
 import com.kontomatik.ImportAccounts;
 import com.kontomatik.Authentication;
+import com.kontomatik.exceptions.InvalidCredentials;
 
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+import static com.kontomatik.mbank.HttpAgent.assertSuccessfulResponse;
 
 public class MBankAuthentication implements Authentication {
 
@@ -23,8 +28,19 @@ public class MBankAuthentication implements Authentication {
   }
 
   private static MBankHttpClient login(LoginAndPassword loginAndPassword) {
-    String body = createLoginRequestBody(loginAndPassword);
-    return MBankHttpClient.initialize(body);
+    HttpAgent agent = new HttpAgent();
+    HttpRequest request = buildLoginRequest(loginAndPassword);
+    HttpResponse<LoginResponse> response = agent.fetchParsedBody(request, LoginResponse.class);
+    assertSuccessfulLogin(response.body());
+    String xTabId = extractXTabIdCookie(response.headers());
+    return new MBankHttpClient(agent, xTabId);
+  }
+
+  private static HttpRequest buildLoginRequest(LoginAndPassword loginAndPassword) {
+    return MBankHttpClient.baseRequest("/pl/LoginMain/Account/JsonLogin")
+      .POST(HttpRequest.BodyPublishers.ofString(createLoginRequestBody(loginAndPassword)))
+      .header("Referer", "https://online.mbank.pl/pl/Login")
+      .build();
   }
 
   private static String createLoginRequestBody(LoginAndPassword loginAndPassword) {
@@ -48,6 +64,21 @@ public class MBankAuthentication implements Authentication {
       }
       """;
     return String.format(requestBody, loginAndPassword.login(), loginAndPassword.password());
+  }
+
+  private static void assertSuccessfulLogin(LoginResponse response) {
+    if (response.errorMessageTitle() != null &&
+      (response.errorMessageTitle().equals("Nieprawidłowy identyfikator lub hasło.")
+        || response.errorMessageTitle().equals("Wpisujesz błędny identyfikator lub hasło")))
+      throw new InvalidCredentials("Incorrect login credentials");
+  }
+
+  private static String extractXTabIdCookie(HttpHeaders headers) {
+    return headers.allValues("set-cookie").stream()
+      .filter(cookie -> cookie.contains("mBank_tabId"))
+      .findFirst()
+      .map(cookie -> cookie.substring("mBank_tabId=".length(), cookie.indexOf(";")))
+      .orElseThrow(RuntimeException::new);
   }
 
   private static void initializeTwoFactorAuthentication(MBankHttpClient httpClient) {
@@ -76,7 +107,9 @@ public class MBankAuthentication implements Authentication {
   private void finalizeAuthentication(MBankHttpClient httpClient) {
     signInInput.confirmTwoFactorAuthentication();
     HttpRequest finalizeTwoFactorRequest = buildFinalizeTwoFactorRequest(httpClient);
-    httpClient.fetchFinalizeTwoFactor(finalizeTwoFactorRequest);
+    HttpResponse<String> response = httpClient.fetchWithoutCorrectResponseAssertion(finalizeTwoFactorRequest);
+    if (response.statusCode() == 400) throw new InvalidCredentials("Two factor authentication failed");
+    assertSuccessfulResponse(response.statusCode());
   }
 
   private static HttpRequest buildFinalizeTwoFactorRequest(MBankHttpClient httpClient) {
@@ -91,6 +124,9 @@ public class MBankAuthentication implements Authentication {
         "scaAuthorizationId": ""
       }
       """;
+  }
+
+  private record LoginResponse(String errorMessageTitle) {
   }
 
 }
