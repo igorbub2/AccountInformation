@@ -20,6 +20,10 @@ class MBankHttpClient {
     this.xTabId = xTabId;
   }
 
+  HttpRequest.Builder prepareRequest(String path) {
+    return baseRequest(path).header("X-Tab-Id", Objects.requireNonNull(xTabId));
+  }
+
   static HttpRequest.Builder baseRequest(String path) {
     return HttpRequest.newBuilder()
       .uri(buildUri(HOST + path))
@@ -31,10 +35,6 @@ class MBankHttpClient {
 
   private static URI buildUri(String uri) {
     return ExceptionUtils.uncheck(() -> new URI(uri));
-  }
-
-  HttpRequest.Builder prepareRequest(String path) {
-    return baseRequest(path).header("X-Tab-Id", Objects.requireNonNull(xTabId));
   }
 
   void fetch(HttpRequest request) {
