@@ -48,7 +48,7 @@ class MBankHttpClient {
     return ExceptionUtils.uncheck(() -> new URI(uri));
   }
 
-  static void assertSuccessfulLogin(LoginResponse response) {
+  private static void assertSuccessfulLogin(LoginResponse response) {
     if (response.errorMessageTitle() != null &&
       (response.errorMessageTitle().equals("Nieprawidłowy identyfikator lub hasło.")
         || response.errorMessageTitle().equals("Wpisujesz błędny identyfikator lub hasło")))
