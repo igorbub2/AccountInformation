@@ -1,5 +1,6 @@
 package com.kontomatik.mbank;
 
+import com.google.common.base.Strings;
 import com.kontomatik.AccountScraper;
 import com.kontomatik.exceptions.ExceptionUtils;
 import com.kontomatik.exceptions.InvalidCredentials;
@@ -13,11 +14,18 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class MBankAccountScraperTest {
 
+  private final Properties properties;
+
+  public MBankAccountScraperTest() {
+    properties = new Properties();
+    ExceptionUtils.uncheck(() -> properties.load(getClass().getClassLoader().getResourceAsStream("testLoginCredentials.properties")));
+  }
+
   @Test
   public void shouldFailSignInWithIncorrectCredentials() {
     AccountScraper scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
-        MBankAccountScraperTest::createIncorrectTestLoginAndPassword,
+        createIncorrectTestLoginAndPassword(),
         () -> {}
       )
     ));
@@ -25,11 +33,15 @@ public class MBankAccountScraperTest {
     assertEquals(exception.getMessage(), "Incorrect login credentials");
   }
 
+  private static LoginAndPassword createIncorrectTestLoginAndPassword() {
+    return new LoginAndPassword("testLogin", "testPassword");
+  }
+
   @Test
   public void shouldFailTwoFactorAuthentication() {
     AccountScraper scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
-        this::extractTestLoginAndPassword,
+        extractTestLoginAndPassword(),
         () -> {}
       )
     ));
@@ -37,11 +49,20 @@ public class MBankAccountScraperTest {
     assertEquals(exception.getMessage(), "Two factor authentication failed");
   }
 
+  private LoginAndPassword extractTestLoginAndPassword() {
+    String login = properties.getProperty("login");
+    String password = properties.getProperty("password");
+    if (Strings.isNullOrEmpty(login) || Strings.isNullOrEmpty(password)) {
+      throw new RuntimeException();
+    }
+    return new LoginAndPassword(login, password);
+  }
+
   @Test
   public void shouldRetrieveAccountsFromBank() {
     AccountScraper scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
-        this::extractTestLoginAndPassword,
+        extractTestLoginAndPassword(),
         MBankAccountScraperTest::waitForUserAction
       )
     ));
@@ -55,21 +76,9 @@ public class MBankAccountScraperTest {
     );
   }
 
-  private LoginAndPassword extractTestLoginAndPassword() {
-    Properties properties = new Properties();
-    ExceptionUtils.uncheck(() -> properties.load(getClass().getClassLoader().getResourceAsStream("testLoginCredentials.properties")));
-    String login = properties.getProperty("login");
-    String password = properties.getProperty("password");
-    return new LoginAndPassword(login, password);
-  }
-
   private static void waitForUserAction() {
     System.out.println("You have 10 seconds to confirm 2FA");
     ExceptionUtils.uncheck(() -> Thread.sleep(10000));
-  }
-
-  private static LoginAndPassword createIncorrectTestLoginAndPassword() {
-    return new LoginAndPassword("testLogin", "testPassword");
   }
 
 }

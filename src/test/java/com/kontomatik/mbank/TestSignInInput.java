@@ -1,12 +1,10 @@
 package com.kontomatik.mbank;
 
-import java.util.function.Supplier;
-
-public record TestSignInInput(Supplier<LoginAndPassword> loginAndPasswordSupplier, Runnable twoFactorAuthentication) implements SignInInput {
+public record TestSignInInput(LoginAndPassword loginAndPassword, Runnable twoFactorAuthentication) implements SignInInput {
 
   @Override
   public LoginAndPassword provideLoginAndPassword() {
-    return loginAndPasswordSupplier.get();
+    return loginAndPassword;
   }
 
   @Override

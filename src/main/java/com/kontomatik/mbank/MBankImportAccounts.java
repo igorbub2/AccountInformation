@@ -20,7 +20,7 @@ class MBankImportAccounts implements ImportAccounts {
     HttpRequest accountsGroupRequest = httpClient.prepareRequest("/pl/Accounts/Accounts/AccountsGroups")
       .GET()
       .build();
-    MBankAccountsGroups accountsGroups = httpClient.fetchParsedBody(accountsGroupRequest, MBankAccountsGroups.class);
+    MBankAccountsGroups accountsGroups = httpClient.fetchParsedBody(accountsGroupRequest, MBankAccountsGroups.class).body();
     return mapToAccount(accountsGroups);
   }
 

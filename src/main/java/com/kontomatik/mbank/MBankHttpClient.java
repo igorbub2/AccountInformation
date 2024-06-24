@@ -1,45 +1,31 @@
 package com.kontomatik.mbank;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kontomatik.exceptions.ExceptionUtils;
 import com.kontomatik.exceptions.InvalidCredentials;
 
-import java.net.CookieManager;
-import java.net.CookiePolicy;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Objects;
 
+import static com.kontomatik.mbank.HttpAgent.assertSuccessfulResponse;
+
 class MBankHttpClient {
 
   private static final String HOST = "https://online.mbank.pl";
 
-  private static final ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+  private final HttpAgent httpAgent;
 
-  private final HttpClient client;
-
-  private String xTabId;
+  private final String xTabId;
 
   static MBankHttpClient initialize(String body) {
-    MBankHttpClient httpClient = new MBankHttpClient();
+    HttpAgent agent = new HttpAgent();
     HttpRequest request = buildLoginRequest(body);
-    HttpResponse<String> loginResponse = httpClient.fetch(request);
-    LoginResponse response = parse(loginResponse.body(), LoginResponse.class);
-    if (isIncorrectCredentials(response)) throw new InvalidCredentials("Incorrect login credentials");
-    httpClient.xTabId = extractXTabIdCookie(loginResponse.headers());
-    return httpClient;
-  }
-
-  private MBankHttpClient() {
-    CookieManager cookieManager = new CookieManager();
-    cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-    client = HttpClient.newBuilder()
-      .cookieHandler(cookieManager)
-      .build();
+    HttpResponse<LoginResponse> response = agent.fetchParsedBody(request, LoginResponse.class);
+    assertSuccessfulLogin(response.body());
+    String xTabId = extractXTabIdCookie(response.headers());
+    return new MBankHttpClient(agent, xTabId);
   }
 
   private static HttpRequest buildLoginRequest(String body) {
@@ -62,28 +48,11 @@ class MBankHttpClient {
     return ExceptionUtils.uncheck(() -> new URI(uri));
   }
 
-  HttpResponse<String> fetch(HttpRequest request) {
-    HttpResponse<String> response = fetchWithoutCorrectResponseAssertion(request);
-    assertCorrectResponse(response.statusCode());
-    return response;
-  }
-
-  HttpResponse<String> fetchWithoutCorrectResponseAssertion(HttpRequest request) {
-    return ExceptionUtils.uncheck(() -> client.send(request, HttpResponse.BodyHandlers.ofString()));
-  }
-
-  static void assertCorrectResponse(int statusCode) {
-    if (statusCode < 200 || statusCode >= 300) throw new RuntimeException();
-  }
-
-  private static <T> T parse(String body, Class<T> outputClass) {
-    return ExceptionUtils.uncheck(() -> mapper.readValue(body, outputClass));
-  }
-
-  private static boolean isIncorrectCredentials(LoginResponse response) {
-    return response.errorMessageTitle() != null &&
+  static void assertSuccessfulLogin(LoginResponse response) {
+    if (response.errorMessageTitle() != null &&
       (response.errorMessageTitle().equals("Nieprawidłowy identyfikator lub hasło.")
-        || response.errorMessageTitle().equals("Wpisujesz błędny identyfikator lub hasło"));
+        || response.errorMessageTitle().equals("Wpisujesz błędny identyfikator lub hasło")))
+      throw new InvalidCredentials("Incorrect login credentials");
   }
 
   private static String extractXTabIdCookie(HttpHeaders headers) {
@@ -94,13 +63,31 @@ class MBankHttpClient {
       .orElseThrow(RuntimeException::new);
   }
 
+  private MBankHttpClient(HttpAgent httpAgent, String xTabId) {
+    this.httpAgent = httpAgent;
+    this.xTabId = xTabId;
+  }
+
   HttpRequest.Builder prepareRequest(String path) {
     return baseRequest(path).header("X-Tab-Id", Objects.requireNonNull(xTabId));
   }
 
-  <T> T fetchParsedBody(HttpRequest request, Class<T> outputClass) {
-    String body = fetch(request).body();
-    return parse(body, outputClass);
+  void fetch(HttpRequest request) {
+    httpAgent.fetch(request);
+  }
+
+  void fetchFinalizeTwoFactor(HttpRequest request) {
+    HttpResponse<String> response = httpAgent.fetchWithoutCorrectResponseAssertion(request);
+    if (response.statusCode() == 400) throw new InvalidCredentials("Two factor authentication failed");
+    assertSuccessfulResponse(response.statusCode());
+  }
+
+  <T> HttpResponse<T> fetchParsedBody(HttpRequest request, Class<T> outputClass) {
+    return httpAgent.fetchParsedBody(request, outputClass);
+  }
+
+  void fetchWithoutCorrectResponseAssertion(HttpRequest request) {
+    httpAgent.fetchWithoutCorrectResponseAssertion(request);
   }
 
   private record LoginResponse(String errorMessageTitle) {

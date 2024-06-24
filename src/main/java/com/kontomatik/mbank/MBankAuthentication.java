@@ -1,13 +1,9 @@
 package com.kontomatik.mbank;
 
-import com.kontomatik.exceptions.InvalidCredentials;
 import com.kontomatik.ImportAccounts;
 import com.kontomatik.Authentication;
 
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
-import static com.kontomatik.mbank.MBankHttpClient.*;
 
 public class MBankAuthentication implements Authentication {
 
@@ -22,7 +18,7 @@ public class MBankAuthentication implements Authentication {
     LoginAndPassword loginAndPassword = signInInput.provideLoginAndPassword();
     MBankHttpClient httpClient = login(loginAndPassword);
     initializeTwoFactorAuthentication(httpClient);
-    finalizeAuthentication(httpClient, signInInput);
+    finalizeAuthentication(httpClient);
     return new MBankImportAccounts(httpClient);
   }
 
@@ -55,17 +51,17 @@ public class MBankAuthentication implements Authentication {
   }
 
   private static void initializeTwoFactorAuthentication(MBankHttpClient httpClient) {
-    HttpRequest initializeTwoFactorAuthentication = buildInitializeTwoFactorAuthenticationRequest(httpClient);
-    httpClient.fetch(initializeTwoFactorAuthentication);
+    HttpRequest initTwoFactorRequest = buildInitTwoFactorRequest(httpClient);
+    httpClient.fetch(initTwoFactorRequest);
   }
 
-  private static HttpRequest buildInitializeTwoFactorAuthenticationRequest(MBankHttpClient httpClient) {
+  private static HttpRequest buildInitTwoFactorRequest(MBankHttpClient httpClient) {
     return httpClient.prepareRequest("/api/authorization/initialize")
-      .POST(HttpRequest.BodyPublishers.ofString(createAuthorizationBody()))
+      .POST(HttpRequest.BodyPublishers.ofString(createInitTwoFactorBody()))
       .build();
   }
 
-  private static String createAuthorizationBody() {
+  private static String createInitTwoFactorBody() {
     return """
       {
         "Url": "sca/authorization/disposable/hostless",
@@ -77,15 +73,13 @@ public class MBankAuthentication implements Authentication {
       """;
   }
 
-  private static void finalizeAuthentication(MBankHttpClient httpClient, SignInInput signInInput) {
+  private void finalizeAuthentication(MBankHttpClient httpClient) {
     signInInput.confirmTwoFactorAuthentication();
-    HttpRequest finalizeTwoFactorAuthentication = buildFinalizeTwoFactorAuthenticationRequest(httpClient);
-    HttpResponse<String> response = httpClient.fetchWithoutCorrectResponseAssertion(finalizeTwoFactorAuthentication);
-    if (response.statusCode() == 400) throw new InvalidCredentials("Two factor authentication failed");
-    assertCorrectResponse(response.statusCode());
+    HttpRequest finalizeTwoFactorRequest = buildFinalizeTwoFactorRequest(httpClient);
+    httpClient.fetchFinalizeTwoFactor(finalizeTwoFactorRequest);
   }
 
-  private static HttpRequest buildFinalizeTwoFactorAuthenticationRequest(MBankHttpClient httpClient) {
+  private static HttpRequest buildFinalizeTwoFactorRequest(MBankHttpClient httpClient) {
     return httpClient.prepareRequest("/pl/Sca/FinalizeAuthorization")
       .POST(HttpRequest.BodyPublishers.ofString(createFinalizeAuthorizationBody()))
       .build();
