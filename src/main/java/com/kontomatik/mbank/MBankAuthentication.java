@@ -28,7 +28,7 @@ public class MBankAuthentication implements Authentication {
   }
 
   private static MBankHttpClient login(LoginAndPassword loginAndPassword) {
-    HttpAgent agent = new HttpAgent();
+    var agent = new HttpAgent();
     HttpRequest request = buildLoginRequest(loginAndPassword);
     HttpResponse<LoginResponse> response = agent.fetchParsedBody(request, LoginResponse.class);
     assertSuccessfulLogin(response.body());

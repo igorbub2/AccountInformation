@@ -23,7 +23,7 @@ public class MBankAccountScraperTest {
 
   @Test
   public void shouldFailSignInWithIncorrectCredentials() {
-    AccountScraper scraper = new AccountScraper(new MBankAuthentication(
+    var scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
         createIncorrectTestLoginAndPassword(),
         () -> {}
@@ -39,7 +39,7 @@ public class MBankAccountScraperTest {
 
   @Test
   public void shouldFailTwoFactorAuthentication() {
-    AccountScraper scraper = new AccountScraper(new MBankAuthentication(
+    var scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
         extractTestLoginAndPassword(),
         () -> {}
@@ -60,7 +60,7 @@ public class MBankAccountScraperTest {
 
   @Test
   public void shouldRetrieveAccountsFromBank() {
-    AccountScraper scraper = new AccountScraper(new MBankAuthentication(
+    var scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
         extractTestLoginAndPassword(),
         MBankAccountScraperTest::waitForUserAction

@@ -19,7 +19,7 @@ class HttpAgent {
   private static final ObjectMapper MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   public HttpAgent() {
-    CookieManager cookieManager = new CookieManager();
+    var cookieManager = new CookieManager();
     cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
     httpClient = HttpClient.newBuilder().cookieHandler(cookieManager).build();
   }
