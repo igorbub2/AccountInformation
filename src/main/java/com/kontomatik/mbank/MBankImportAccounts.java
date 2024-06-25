@@ -9,18 +9,20 @@ import java.util.stream.Collectors;
 
 class MBankImportAccounts implements ImportAccounts {
 
-  private final MBankHttpClient httpClient;
+  private final MBankHttpRequests requests;
+  private final HttpAgent agent;
 
-  MBankImportAccounts(MBankHttpClient httpClient) {
-    this.httpClient = httpClient;
+  MBankImportAccounts(MBankHttpRequests requests, HttpAgent agent) {
+    this.requests = requests;
+    this.agent = agent;
   }
 
   @Override
   public List<Account> retrieveAccounts() {
-    HttpRequest accountsGroupRequest = httpClient.prepareRequest("/pl/Accounts/Accounts/AccountsGroups")
+    HttpRequest accountsGroupRequest = requests.prepareRequest("/pl/Accounts/Accounts/AccountsGroups")
       .GET()
       .build();
-    MBankAccountsGroups accountsGroups = httpClient.fetchParsedBody(accountsGroupRequest, MBankAccountsGroups.class).body();
+    MBankAccountsGroups accountsGroups = agent.fetchParsedBody(accountsGroupRequest, MBankAccountsGroups.class).body();
     return mapToAccount(accountsGroups);
   }
 
@@ -32,10 +34,10 @@ class MBankImportAccounts implements ImportAccounts {
 
   @Override
   public void logout() {
-    HttpRequest logoutRequest = httpClient.prepareRequest("/LoginMain/Account/Logout")
+    HttpRequest logoutRequest = requests.prepareRequest("/LoginMain/Account/Logout")
       .GET()
       .build();
-    httpClient.fetchWithoutCorrectResponseAssertion(logoutRequest);
+    agent.fetchWithoutCorrectResponseAssertion(logoutRequest);
   }
 
   private record MBankAccount(String accountNumber, String balance, String currency) {

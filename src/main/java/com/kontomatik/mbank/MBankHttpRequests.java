@@ -4,19 +4,15 @@ import com.kontomatik.exceptions.ExceptionUtils;
 
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Objects;
 
-class MBankHttpClient {
+class MBankHttpRequests {
 
   private static final String HOST = "https://online.mbank.pl";
 
-  private final HttpAgent httpAgent;
-
   private final String xTabId;
 
-  MBankHttpClient(HttpAgent httpAgent, String xTabId) {
-    this.httpAgent = httpAgent;
+  MBankHttpRequests(String xTabId) {
     this.xTabId = xTabId;
   }
 
@@ -37,16 +33,4 @@ class MBankHttpClient {
     return ExceptionUtils.uncheck(() -> new URI(uri));
   }
 
-  void fetch(HttpRequest request) {
-    httpAgent.fetch(request);
-  }
-
-  <T> HttpResponse<T> fetchParsedBody(HttpRequest request, Class<T> outputClass) {
-    return httpAgent.fetchParsedBody(request, outputClass);
-  }
-
-  HttpResponse<String> fetchWithoutCorrectResponseAssertion(HttpRequest request) {
-    return httpAgent.fetchWithoutCorrectResponseAssertion(request);
-  }
-  
 }

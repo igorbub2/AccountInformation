@@ -13,6 +13,7 @@ import static com.kontomatik.mbank.HttpAgent.assertSuccessfulResponse;
 public class MBankAuthentication implements Authentication {
 
   private final SignInInput signInInput;
+  private final HttpAgent agent = new HttpAgent();
 
   public MBankAuthentication(SignInInput signInInput) {
     this.signInInput = signInInput;
@@ -20,24 +21,23 @@ public class MBankAuthentication implements Authentication {
 
   @Override
   public ImportAccounts signIn() {
-    MBankHttpClient httpClient = login();
-    initializeTwoFactorAuthentication(httpClient);
-    finalizeAuthentication(httpClient);
-    return new MBankImportAccounts(httpClient);
+    MBankHttpRequests requests = login();
+    initializeTwoFactorAuthentication(requests);
+    finalizeAuthentication(requests);
+    return new MBankImportAccounts(requests, agent);
   }
 
-  private MBankHttpClient login() {
+  private MBankHttpRequests login() {
     LoginAndPassword loginAndPassword = signInInput.provideLoginAndPassword();
-    var agent = new HttpAgent();
     HttpRequest request = buildLoginRequest(loginAndPassword);
     HttpResponse<LoginResponse> response = agent.fetchParsedBody(request, LoginResponse.class);
     assertSuccessfulLogin(response.body());
     String xTabId = extractXTabIdCookie(response.headers());
-    return new MBankHttpClient(agent, xTabId);
+    return new MBankHttpRequests(xTabId);
   }
 
   private static HttpRequest buildLoginRequest(LoginAndPassword loginAndPassword) {
-    return MBankHttpClient.baseRequest("/pl/LoginMain/Account/JsonLogin")
+    return MBankHttpRequests.baseRequest("/pl/LoginMain/Account/JsonLogin")
       .POST(HttpRequest.BodyPublishers.ofString(createLoginRequestBody(loginAndPassword)))
       .header("Referer", "https://online.mbank.pl/pl/Login")
       .build();
@@ -81,15 +81,11 @@ public class MBankAuthentication implements Authentication {
       .orElseThrow();
   }
 
-  private static void initializeTwoFactorAuthentication(MBankHttpClient httpClient) {
-    HttpRequest initTwoFactorRequest = buildInitTwoFactorRequest(httpClient);
-    httpClient.fetch(initTwoFactorRequest);
-  }
-
-  private static HttpRequest buildInitTwoFactorRequest(MBankHttpClient httpClient) {
-    return httpClient.prepareRequest("/api/authorization/initialize")
+  private void initializeTwoFactorAuthentication(MBankHttpRequests requests) {
+    HttpRequest initTwoFactorRequest = requests.prepareRequest("/api/authorization/initialize")
       .POST(HttpRequest.BodyPublishers.ofString(createInitTwoFactorBody()))
       .build();
+    agent.fetch(initTwoFactorRequest);
   }
 
   private static String createInitTwoFactorBody() {
@@ -104,18 +100,14 @@ public class MBankAuthentication implements Authentication {
       """;
   }
 
-  private void finalizeAuthentication(MBankHttpClient httpClient) {
+  private void finalizeAuthentication(MBankHttpRequests requests) {
     signInInput.confirmTwoFactorAuthentication();
-    HttpRequest finalizeTwoFactorRequest = buildFinalizeTwoFactorRequest(httpClient);
-    HttpResponse<String> response = httpClient.fetchWithoutCorrectResponseAssertion(finalizeTwoFactorRequest);
-    if (response.statusCode() == 400) throw new InvalidCredentials("Two factor authentication failed");
-    assertSuccessfulResponse(response.statusCode());
-  }
-
-  private static HttpRequest buildFinalizeTwoFactorRequest(MBankHttpClient httpClient) {
-    return httpClient.prepareRequest("/pl/Sca/FinalizeAuthorization")
+    HttpRequest finalizeTwoFactorRequest = requests.prepareRequest("/pl/Sca/FinalizeAuthorization")
       .POST(HttpRequest.BodyPublishers.ofString(createFinalizeAuthorizationBody()))
       .build();
+    HttpResponse<String> response = agent.fetchWithoutCorrectResponseAssertion(finalizeTwoFactorRequest);
+    if (response.statusCode() == 400) throw new InvalidCredentials("Two factor authentication failed");
+    assertSuccessfulResponse(response.statusCode());
   }
 
   private static String createFinalizeAuthorizationBody() {
