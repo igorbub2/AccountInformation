@@ -11,7 +11,7 @@ class MBankImportAccounts implements ImportAccounts {
 
   private final MBankHttpClient httpClient;
 
-  public MBankImportAccounts(MBankHttpClient httpClient) {
+  MBankImportAccounts(MBankHttpClient httpClient) {
     this.httpClient = httpClient;
   }
 

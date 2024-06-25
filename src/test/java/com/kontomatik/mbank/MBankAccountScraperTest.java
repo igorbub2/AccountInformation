@@ -14,18 +14,23 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class MBankAccountScraperTest {
 
-  private final Properties properties;
+  private static final LoginAndPassword VALID_LOGIN_AND_PASSWORD = loadLoginAndPasswordFromProperties();
 
-  public MBankAccountScraperTest() {
-    properties = new Properties();
-    ExceptionUtils.uncheck(() -> properties.load(getClass().getClassLoader().getResourceAsStream("testLoginCredentials.properties")));
+  private static LoginAndPassword loadLoginAndPasswordFromProperties() {
+    var properties = new Properties();
+    ExceptionUtils.uncheck(() -> properties.load(MBankAccountScraperTest.class.getResourceAsStream("testLoginCredentials.properties")));
+    String login = properties.getProperty("login");
+    String password = properties.getProperty("password");
+    if (Strings.isNullOrEmpty(login) || Strings.isNullOrEmpty(password))
+      throw new RuntimeException();
+    return new LoginAndPassword(login, password);
   }
 
   @Test
   public void shouldFailSignInWithIncorrectCredentials() {
     var scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
-        createIncorrectTestLoginAndPassword(),
+        new LoginAndPassword("testLogin", "testPassword"),
         () -> {}
       )
     ));
@@ -33,15 +38,11 @@ public class MBankAccountScraperTest {
     assertEquals(exception.getMessage(), "Incorrect login credentials");
   }
 
-  private static LoginAndPassword createIncorrectTestLoginAndPassword() {
-    return new LoginAndPassword("testLogin", "testPassword");
-  }
-
   @Test
   public void shouldFailTwoFactorAuthentication() {
     var scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
-        extractTestLoginAndPassword(),
+        VALID_LOGIN_AND_PASSWORD,
         () -> {}
       )
     ));
@@ -49,20 +50,11 @@ public class MBankAccountScraperTest {
     assertEquals(exception.getMessage(), "Two factor authentication failed");
   }
 
-  private LoginAndPassword extractTestLoginAndPassword() {
-    String login = properties.getProperty("login");
-    String password = properties.getProperty("password");
-    if (Strings.isNullOrEmpty(login) || Strings.isNullOrEmpty(password)) {
-      throw new RuntimeException();
-    }
-    return new LoginAndPassword(login, password);
-  }
-
   @Test
   public void shouldRetrieveAccountsFromBank() {
     var scraper = new AccountScraper(new MBankAuthentication(
       new TestSignInInput(
-        extractTestLoginAndPassword(),
+        VALID_LOGIN_AND_PASSWORD,
         MBankAccountScraperTest::waitForUserAction
       )
     ));

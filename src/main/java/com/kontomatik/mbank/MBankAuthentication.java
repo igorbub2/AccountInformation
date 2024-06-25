@@ -20,14 +20,14 @@ public class MBankAuthentication implements Authentication {
 
   @Override
   public ImportAccounts signIn() {
-    LoginAndPassword loginAndPassword = signInInput.provideLoginAndPassword();
-    MBankHttpClient httpClient = login(loginAndPassword);
+    MBankHttpClient httpClient = login();
     initializeTwoFactorAuthentication(httpClient);
     finalizeAuthentication(httpClient);
     return new MBankImportAccounts(httpClient);
   }
 
-  private static MBankHttpClient login(LoginAndPassword loginAndPassword) {
+  private MBankHttpClient login() {
+    LoginAndPassword loginAndPassword = signInInput.provideLoginAndPassword();
     var agent = new HttpAgent();
     HttpRequest request = buildLoginRequest(loginAndPassword);
     HttpResponse<LoginResponse> response = agent.fetchParsedBody(request, LoginResponse.class);
@@ -78,7 +78,7 @@ public class MBankAuthentication implements Authentication {
       .filter(cookie -> cookie.contains("mBank_tabId"))
       .findFirst()
       .map(cookie -> cookie.substring("mBank_tabId=".length(), cookie.indexOf(";")))
-      .orElseThrow(RuntimeException::new);
+      .orElseThrow();
   }
 
   private static void initializeTwoFactorAuthentication(MBankHttpClient httpClient) {
